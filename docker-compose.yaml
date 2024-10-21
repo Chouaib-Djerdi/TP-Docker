@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  database:
+    image: postgres
+    networks:
+      - backend
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+  adminer:
+    image: adminer
+    depends_on:
+      - database
+    networks:
+      - backend
+    ports:
+      - 8091:8080
+
+  web-app:
+    build:
+      context: ./web-app
+      dockerfile: Dockerfile
+    volumes:
+      - ./web-app:/app
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      - database
+      - api
+    ports:
+      - "8090:5000"
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    volumes:
+      - ./api:/app
+    networks:
+      - backend
+    depends_on:
+      - database
+
+networks:
+  backend:
+  frontend:
+
+volumes:
+  db_data:
